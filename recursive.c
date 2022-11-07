@@ -60,9 +60,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    char* filename = "yolo.txt"; 
+    // char* filename = "yolo.txt"; 
     FILE* stream;
-    stream = fopen(filename, "r");
+    stream = fopen(argv[1], "r");
     if (stream == NULL) {
         fprintf(stderr, "fichier introuvable");
         exit(-1);

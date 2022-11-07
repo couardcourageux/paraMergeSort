@@ -1,30 +1,24 @@
-#include <stdio.h>
+#include <stdio.h>disp
 #include <stdlib.h>
 #include <pthread.h>
 #include <math.h>
 
+
 typedef struct {
     int i;
     int j;
-    double prof;
+    int prof;
     int* tab;
     int* tmp;
 } info_holder;
 
-
 void disp(int tab[], int size) {
-    if (size > 1000) {
-        disp(tab, 100);
-        disp(&tab[size - 101], 100);
-    }
+    if (size > 1000) {disp(tab, 100);disp(&tab[size - 101], 100);}
     else {
-    for(int i = 0; i < size; i++)  {
-        printf(" %d ", tab[i]);
-        }
-    printf("\n");
+        for(int i = 0; i < size; i++)  {printf(" %d ", tab[i]);}
+        printf("\n");
     }
 }
-
 void swap(int* a, int* b) {
     int tmp = *a;
     *a = *b;
@@ -44,6 +38,7 @@ int dycho(int x, int tab[], int p, int r){
 void fusionClassique(int i, int j, int m, int tab[], int tmp[]) {
     int g = i;
     int d = m + 1;
+    // printf(" %d -> %d\n", l, r);
     for(int c = i; c <= j; c++) {
         if(g == m + 1) { //le pointeur du sous-tableau de gauche a atteint la limite
             tmp[c] = tab[d];
@@ -58,10 +53,9 @@ void fusionClassique(int i, int j, int m, int tab[], int tmp[]) {
             tmp[c] = tab[d];
             d++;
         }
-    }   
+    }    
 }
-////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////
+//////////////////////////////////////////////
 void triFusionClassique(int i, int j, int tab[], int tmp[]) {
     
     if(j <= i){ return;}
@@ -77,6 +71,7 @@ void triFusionClassique(int i, int j, int tab[], int tmp[]) {
     }
     
 }
+
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
 void *triFusionTh(void* holder1) {
@@ -84,7 +79,6 @@ void *triFusionTh(void* holder1) {
     int i = holder->i;
     int j = holder->j;
     int prof = holder->prof;
-    
     if (j <= i) {return NULL;}
     int m = (i+j)/2;
 
@@ -92,53 +86,54 @@ void *triFusionTh(void* holder1) {
         // on continue à paralléliser
         info_holder* holderSon = malloc(sizeof(info_holder));
         holderSon->i = i;
-        holderSon->j = m-1;
+        holderSon->j = m;
         holderSon->prof = prof / 2;
         holderSon->tab = holder->tab;
         holderSon->tmp = holder->tmp;  
 
-
         info_holder* holderLocal = malloc(sizeof(info_holder));
-        holderLocal->i = m;
+        holderLocal->i = m+1;
         holderLocal->j = j;
         holderLocal->prof = prof / 2;
         holderLocal->tab = holder->tab;
         holderLocal->tmp = holder->tmp; 
 
         pthread_t son;
-        if (pthread_create(&son, NULL, triFusionTh, holderSon )) {
-            free(holderSon);
-        }
+        if (pthread_create(&son, NULL, triFusionTh, holderSon )) {free(holderSon);}
         triFusionTh((void*)holderLocal);
         free(holderLocal);
         pthread_join(son, NULL);
-
         fusionClassique(i, j, m, holder->tab, holder->tmp);
+        for(int c = i; c <= j; c++) {holder->tab[c] = holder->tmp[c];}
     }
     else {
         // on passe en récursif classique
         triFusionClassique(i, j, holder->tab, holder->tmp);
     }
 
-    for(int c = i; c <= j; c++) {  //copier les éléments de tmp[] à tab[]
-        holder->tab[c] = holder->tmp[c];
-    }
 }
+
 void triFusionHolder(int i, int j, int prof, int tab[], int tmp[]) {
     info_holder* temp = malloc(sizeof(info_holder));
     temp->i = i;
     temp->j = j;
-    temp->prof = prof / 2;
+    temp->prof = prof;
     temp->tab = tab;
     temp->tmp = tmp;  
     triFusionTh(temp); 
 }
-//////////////////////////////////////////////////
-//////////////////////////////////////////////////
 
-void import_file(const char* filename) {
+
+
+int main(int argc, char* argv[]) {
+
+    if (argc != 3) {
+        printf("usage: ./thread_fusion inputFileName nbThread");
+        return 1;
+    }
+
     FILE* stream;
-    stream = fopen(filename, "r");
+    stream = fopen(argv[1], "r");
     if (stream == NULL) {
         fprintf(stderr, "fichier introuvable");
         exit(-1);
@@ -146,37 +141,13 @@ void import_file(const char* filename) {
     int n;
     fscanf(stream, "%d", &n);
     
-    int** tab = malloc(n * sizeof(int));
-    int** tmp = malloc(n * sizeof(int));
+    int* tab = malloc(n * sizeof(int));
+    int* tmp = malloc(n * sizeof(int));
     int count = 0;
     while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}
-    //buf est l'array avec lequel on veut travailler, il faudra faire une fonction de callBack dessus
-}
-
-
-
-
-int main() {
-//   int  nbr, i, tab[100], tmp[100];
- 
-  int nbr = 8;
-//   int* tab = malloc(nbr * sizeof(int));
-//   int* tmp = malloc(nbr * sizeof(int));    
-//     tab[0] = 6;
-//     tab[3] = 14;
-//     tab[2] = 5;
-//     tab[1] = 1;
-
-    int tab[] = {8, 7, 6, 5, 4, 3, 2, 1};
-    int tmp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-
-
-//   triFusionClassique(0, nbr-1, tab, tmp);
-//   printf("oui");
-  triFusionHolder(0, nbr-1, 2, tab, tmp);
- 
-  printf("\n Tableau trié : ");
-  disp(tab, 8); 
-  return 0;
+    triFusionHolder(0, n-1, atoi(argv[2]), tab, tmp);
+    
+    disp(tab, n); 
+    return 0;
 
 }
