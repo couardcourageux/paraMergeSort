@@ -15,8 +15,7 @@ typedef struct {
 void disp(int tab[], int size) {
     if (size > 1000) {disp(tab, 100);disp(&tab[size - 101], 100);}
     else {
-        int i;
-        for( i = 0; i < size; i++)  {printf(" %d ", tab[i]);}
+        for(int i = 0; i < size; i++)  {printf(" %d ", tab[i]);}
         printf("\n");
     }
 }
@@ -40,8 +39,7 @@ void fusionClassique(int i, int j, int m, int tab[], int tmp[]) {
     int g = i;
     int d = m + 1;
     // printf(" %d -> %d\n", l, r);
-    int c;
-    for( c = i; c <= j; c++) {
+    for(int c = i; c <= j; c++) {
         if(g == m + 1) { //le pointeur du sous-tableau de gauche a atteint la limite
             tmp[c] = tab[d];
             d++;
@@ -55,24 +53,23 @@ void fusionClassique(int i, int j, int m, int tab[], int tmp[]) {
             tmp[c] = tab[d];
             d++;
         }
-    }    
+    }
 }
 //////////////////////////////////////////////
 void triFusionClassique(int i, int j, int tab[], int tmp[]) {
-    
+
     if(j <= i){ return;}
     int m = (i + j) / 2;
-    
+
     triFusionClassique(i, m, tab, tmp);     //trier la moitié gauche récursivement
     triFusionClassique(m + 1, j, tab, tmp); //trier la moitié droite récursivement
 
     fusionClassique(i, j, m, tab, tmp);
 // on boucle de i à j pour remplir chaque élément du tableau final fusionné
-    int c;
-    for(c = i; c <= j; c++) {  //copier les éléments de tmp[] à tab[]
+    for(int c = i; c <= j; c++) {  //copier les éléments de tmp[] à tab[]
         tab[c] = tmp[c];
     }
-    
+
 }
 
 ////////////////////////////////////////////////////////////
@@ -92,14 +89,14 @@ void *triFusionTh(void* holder1) {
         holderSon->j = m;
         holderSon->prof = prof / 2;
         holderSon->tab = holder->tab;
-        holderSon->tmp = holder->tmp;  
+        holderSon->tmp = holder->tmp;
 
         info_holder* holderLocal = malloc(sizeof(info_holder));
         holderLocal->i = m+1;
         holderLocal->j = j;
         holderLocal->prof = prof / 2;
         holderLocal->tab = holder->tab;
-        holderLocal->tmp = holder->tmp; 
+        holderLocal->tmp = holder->tmp;
 
         pthread_t son;
         if (pthread_create(&son, NULL, triFusionTh, holderSon )) {free(holderSon);}
@@ -107,8 +104,7 @@ void *triFusionTh(void* holder1) {
         free(holderLocal);
         pthread_join(son, NULL);
         fusionClassique(i, j, m, holder->tab, holder->tmp);
-        int c;
-        for( c = i; c <= j; c++) {holder->tab[c] = holder->tmp[c];}
+        for(int c = i; c <= j; c++) {holder->tab[c] = holder->tmp[c];}
     }
     else {
         // on passe en récursif classique
@@ -123,15 +119,15 @@ void triFusionHolder(int i, int j, int prof, int tab[], int tmp[]) {
     temp->j = j;
     temp->prof = prof;
     temp->tab = tab;
-    temp->tmp = tmp;  
-    triFusionTh(temp); 
+    temp->tmp = tmp;
+    triFusionTh(temp);
 }
 
 
 
 int main(int argc, char* argv[]) {
 
-    if (argc < 3) {
+    /*if (argc < 3) {
         printf("usage: ./thread_fusion inputFileName nbThread");
         return 1;
     }
@@ -143,29 +139,37 @@ int main(int argc, char* argv[]) {
         exit(-1);
     }
     int n;
-    fscanf(stream, "%d", &n);
-    
-    int nbThread = atoi(argv[2]);
+    fscanf(stream, "%d", &n);*/
+    int n = 50000000;
+    int nbThread = 8;
     int* tab = malloc(n * sizeof(int));
     int* tmp = malloc(n * sizeof(int));
-    int count = 0;
-    while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}
+    int i;
 
-    if (argc == 4) {
-        clock_t begin = clock();
-        triFusionHolder(0, n-1, nbThread, tab, tmp);
-        clock_t end = clock();
-        double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-        printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
+    srand( (int)time( NULL ) );
+
+    for ( i = 0; i < n; ++i) {
+        tab[i] = rand();
+        //printf( "r[%d] = %d\n", i, r[i]);
     }
-    else {
+    /*int count = 0;
+    while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}*/
+
+    //if (argc == 4) {
+    clock_t begin = clock();
+    triFusionHolder(0, n-1, nbThread, tab, tmp);
+    clock_t end = clock();
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
+    //}
+    /*else {
         triFusionHolder(0, n-1, atoi(argv[2]), tab, tmp);
-    
-        disp(tab, n); 
-    }
+
+        disp(tab, n);
+    }*/
 
 
-    
+
     return 0;
 
 }
