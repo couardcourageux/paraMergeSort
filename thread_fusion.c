@@ -15,7 +15,8 @@ typedef struct {
 void disp(int tab[], int size) {
     if (size > 1000) {disp(tab, 100);disp(&tab[size - 101], 100);}
     else {
-        for(int i = 0; i < size; i++)  {printf(" %d ", tab[i]);}
+        int i;
+        for( i = 0; i < size; i++)  {printf(" %d ", tab[i]);}
         printf("\n");
     }
 }
@@ -39,7 +40,8 @@ void fusionClassique(int i, int j, int m, int tab[], int tmp[]) {
     int g = i;
     int d = m + 1;
     // printf(" %d -> %d\n", l, r);
-    for(int c = i; c <= j; c++) {
+    int c;
+    for( c = i; c <= j; c++) {
         if(g == m + 1) { //le pointeur du sous-tableau de gauche a atteint la limite
             tmp[c] = tab[d];
             d++;
@@ -66,7 +68,8 @@ void triFusionClassique(int i, int j, int tab[], int tmp[]) {
 
     fusionClassique(i, j, m, tab, tmp);
 // on boucle de i à j pour remplir chaque élément du tableau final fusionné
-    for(int c = i; c <= j; c++) {  //copier les éléments de tmp[] à tab[]
+    int c;
+    for(c = i; c <= j; c++) {  //copier les éléments de tmp[] à tab[]
         tab[c] = tmp[c];
     }
     
@@ -104,7 +107,8 @@ void *triFusionTh(void* holder1) {
         free(holderLocal);
         pthread_join(son, NULL);
         fusionClassique(i, j, m, holder->tab, holder->tmp);
-        for(int c = i; c <= j; c++) {holder->tab[c] = holder->tmp[c];}
+        int c;
+        for( c = i; c <= j; c++) {holder->tab[c] = holder->tmp[c];}
     }
     else {
         // on passe en récursif classique
