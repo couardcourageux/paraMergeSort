@@ -127,7 +127,7 @@ void triFusionHolder(int i, int j, int prof, int tab[], int tmp[]) {
 
 int main(int argc, char* argv[]) {
 
-    if (argc != 3) {
+    if (argc < 3) {
         printf("usage: ./thread_fusion inputFileName nbThread");
         return 1;
     }
@@ -141,13 +141,27 @@ int main(int argc, char* argv[]) {
     int n;
     fscanf(stream, "%d", &n);
     
+    int nbThread = atoi(argv[2]);
     int* tab = malloc(n * sizeof(int));
     int* tmp = malloc(n * sizeof(int));
     int count = 0;
     while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}
-    triFusionHolder(0, n-1, atoi(argv[2]), tab, tmp);
+
+    if (argc == 4) {
+        clock_t begin = clock();
+        triFusionHolder(0, n-1, nbThread, tab, tmp);
+        clock_t end = clock();
+        double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+        printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
+    }
+    else {
+        triFusionHolder(0, n-1, atoi(argv[2]), tab, tmp);
     
-    disp(tab, n); 
+        disp(tab, n); 
+    }
+
+
+    
     return 0;
 
 }
