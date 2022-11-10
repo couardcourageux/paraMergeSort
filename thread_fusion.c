@@ -1,21 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-
+#include "omp.h"
 
 
 typedef struct {
-    int i;
-    int j;
-    int prof;
-    int* tab;
-    int* tmp;
+    long i;
+    long j;
+    int prof;     //nb threads
+    long* tab;
+    long* tmp;
 } info_holder;
 
-void disp(int tab[], int size) {
+void disp(long tab[], long size) {
+    long i;
     if (size > 1000) {disp(tab, 100);disp(&tab[size - 101], 100);}
     else {
-        for(int i = 0; i < size; i++)  {printf(" %d ", tab[i]);}
+        for(i = 0; i < size; i++)  {printf(" %d ", tab[i]);}
         printf("\n");
     }
 }
@@ -34,12 +35,23 @@ int dycho(int x, int tab[], int p, int r){
     return dycho(x, tab, p, m-1);
 }
 
+void afficher_tableau_entiers ( int* tableau, int taille ) {
+    int i;
+    if( tableau != NULL && taille > 0) {
+        for(i = 0 ; i < taille ; i++) {
+            printf ("%d ", tableau [i]);
+        }
+    }
+    printf ("\n");
+}
+
 ////////////////////////////////////////::
-void fusionClassique(int i, int j, int m, int tab[], int tmp[]) {
-    int g = i;
-    int d = m + 1;
+void fusionClassique(long i, long j, long m, long tab[], long tmp[]) {
+    long g = i;
+    long d = m + 1;
     // printf(" %d -> %d\n", l, r);
-    for(int c = i; c <= j; c++) {
+    long c;
+    for(c = i; c <= j; c++) {
         if(g == m + 1) { //le pointeur du sous-tableau de gauche a atteint la limite
             tmp[c] = tab[d];
             d++;
@@ -56,17 +68,18 @@ void fusionClassique(int i, int j, int m, int tab[], int tmp[]) {
     }
 }
 //////////////////////////////////////////////
-void triFusionClassique(int i, int j, int tab[], int tmp[]) {
+void triFusionClassique(long i, long j, long tab[], long tmp[]) {
 
     if(j <= i){ return;}
-    int m = (i + j) / 2;
+    long m = (i + j) / 2;
 
     triFusionClassique(i, m, tab, tmp);     //trier la moitié gauche récursivement
     triFusionClassique(m + 1, j, tab, tmp); //trier la moitié droite récursivement
 
     fusionClassique(i, j, m, tab, tmp);
+    long c;
 // on boucle de i à j pour remplir chaque élément du tableau final fusionné
-    for(int c = i; c <= j; c++) {  //copier les éléments de tmp[] à tab[]
+    for(c = i; c <= j; c++) {  //copier les éléments de tmp[] à tab[]
         tab[c] = tmp[c];
     }
 
@@ -76,11 +89,11 @@ void triFusionClassique(int i, int j, int tab[], int tmp[]) {
 ////////////////////////////////////////////////////////////
 void *triFusionTh(void* holder1) {
     info_holder* holder = (info_holder*)holder1;
-    int i = holder->i;
-    int j = holder->j;
+    long i = holder->i;
+    long j = holder->j;
     int prof = holder->prof;
     if (j <= i) {return NULL;}
-    int m = (i+j)/2;
+    long m = (i+j)/2;
 
     if (prof > 1) {
         // on continue à paralléliser
@@ -104,7 +117,8 @@ void *triFusionTh(void* holder1) {
         free(holderLocal);
         pthread_join(son, NULL);
         fusionClassique(i, j, m, holder->tab, holder->tmp);
-        for(int c = i; c <= j; c++) {holder->tab[c] = holder->tmp[c];}
+        long c;
+        for(c = i; c <= j; c++) {holder->tab[c] = holder->tmp[c];}
     }
     else {
         // on passe en récursif classique
@@ -113,7 +127,30 @@ void *triFusionTh(void* holder1) {
 
 }
 
-void triFusionHolder(int i, int j, int prof, int tab[], int tmp[]) {
+void *triFusionOMP(long i, long j, int prof, long tab[], long tmp[]) {
+    if (j <= i)
+        return NULL;
+    long m = (i+j)/2;
+
+    if (prof > 1){
+#pragma omp parallel sections
+        {
+#pragma omp section
+            triFusionOMP(i, m, prof/2, tab, tmp);
+#pragma omp section
+            triFusionOMP(m + 1, j, prof/2, tab, tmp);
+        }
+        fusionClassique(i, j, m, tab, tmp);
+        long c;
+        for(c = i; c <= j; c++)
+            tab[c] = tmp[c];
+    } else
+        triFusionClassique(i, j, tab, tmp);
+}
+
+
+
+void triFusionHolder(long i, long j, int prof, long tab[], long tmp[]) {
     info_holder* temp = malloc(sizeof(info_holder));
     temp->i = i;
     temp->j = j;
@@ -123,10 +160,7 @@ void triFusionHolder(int i, int j, int prof, int tab[], int tmp[]) {
     triFusionTh(temp);
 }
 
-
-
-int main(int argc, char* argv[]) {
-
+void ptrheads(){
     /*if (argc < 3) {
         printf("usage: ./thread_fusion inputFileName nbThread");
         return 1;
@@ -140,13 +174,13 @@ int main(int argc, char* argv[]) {
     }
     int n;
     fscanf(stream, "%d", &n);*/
-    int n = 50000000;
-    int nbThread = 8;
-    int* tab = malloc(n * sizeof(int));
-    int* tmp = malloc(n * sizeof(int));
-    int i;
+    long n = 50000000;
+    int nbThread = 48;
+    long* tab = malloc(n * sizeof(long));
+    long* tmp = malloc(n * sizeof(long));
+    long i;
 
-    srand( (int)time( NULL ) );
+    srand( (long)time( NULL ) );
 
     for ( i = 0; i < n; ++i) {
         tab[i] = rand();
@@ -156,10 +190,10 @@ int main(int argc, char* argv[]) {
     while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}*/
 
     //if (argc == 4) {
-    clock_t begin = clock();
+    double begin = omp_get_wtime();
     triFusionHolder(0, n-1, nbThread, tab, tmp);
-    clock_t end = clock();
-    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    double end = omp_get_wtime();
+    double time_spent = end - begin;
     printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
     //}
     /*else {
@@ -167,9 +201,33 @@ int main(int argc, char* argv[]) {
 
         disp(tab, n);
     }*/
+}
 
+void omp(){
+    long n = 50000000;
+    int nbThread = 2;
+    long* tab = malloc(n * sizeof(long));
+    long* tmp = malloc(n * sizeof(long));
+    long i;
 
+    srand( (long)time( NULL ) );
 
+    for ( i = 0; i < n; ++i) {
+        tab[i] = rand();
+        //printf( "r[%d] = %d\n", i, r[i]);
+    }
+    //disp(tab, n);
+    double begin = omp_get_wtime();
+    triFusionOMP(0, n-1, nbThread, tab, tmp);
+    double end = omp_get_wtime();
+    double time_spent = end - begin;
+    printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
+    //disp(tab, n);
+}
+
+int main(int argc, char* argv[]) {
+    //ptrheads();
+    omp();
     return 0;
 
 }
