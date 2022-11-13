@@ -16,10 +16,11 @@ void disp(long tab[], long size) {
     long i;
     if (size > 1000) {disp(tab, 100);disp(&tab[size - 101], 100);}
     else {
-        for(i = 0; i < size; i++)  {printf(" %d ", tab[i]);}
+        for(i = 0; i < size; i++)  {printf(" %ld ", tab[i]);}
         printf("\n");
     }
 }
+
 void swap(int* a, int* b) {
     int tmp = *a;
     *a = *b;
@@ -39,7 +40,7 @@ void afficher_tableau_entiers ( int* tableau, int taille ) {
     int i;
     if( tableau != NULL && taille > 0) {
         for(i = 0 ; i < taille ; i++) {
-            printf ("%d ", tableau [i]);
+            printf ("%ld ", tableau [i]);
         }
     }
     printf ("\n");
@@ -160,6 +161,26 @@ void triFusionHolder(long i, long j, int prof, long tab[], long tmp[]) {
     triFusionTh(temp);
 }
 
+void generateFile(){
+    long n = 50000000;
+    long* tab = malloc(n * sizeof(long));
+    long i;
+
+    srand( (long)time( NULL ) );
+
+    FILE *file = fopen("fichier_test2.txt", "w");
+    if (file != NULL){
+        for ( i = 0; i < 10; ++i) {
+            tab[i] = rand();
+            fprintf(file, "%ld ", tab[i]);
+        }
+    }
+
+
+
+    fclose(file);
+}
+
 void ptrheads(){
     /*if (argc < 3) {
         printf("usage: ./thread_fusion inputFileName nbThread");
@@ -176,16 +197,19 @@ void ptrheads(){
     fscanf(stream, "%d", &n);*/
     long n = 50000000;
     int nbThread = 48;
+    long i;
     long* tab = malloc(n * sizeof(long));
     long* tmp = malloc(n * sizeof(long));
-    long i;
 
-    srand( (long)time( NULL ) );
+    FILE  * file = fopen("fichier_test2.txt", "r");
+
+
+    /*srand( (long)time( NULL ) );
 
     for ( i = 0; i < n; ++i) {
         tab[i] = rand();
         //printf( "r[%d] = %d\n", i, r[i]);
-    }
+    }*/
     /*int count = 0;
     while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}*/
 
@@ -227,7 +251,23 @@ void omp(){
 
 int main(int argc, char* argv[]) {
     //ptrheads();
-    omp();
+    //omp();
+    //generateFile();
+    int n = 10;
+    int i;
+    int* tab = malloc(n*sizeof(long));
+    FILE *file = fopen("fichier_test2.txt", "r");
+
+    if (file == NULL){
+        printf("fichier introuvable");
+        exit(-1);
+    }
+    int m;
+    fscanf(file, "%ld", &m);
+    int count = 0;
+    while (fscanf(file, "%ld", &tab[count] == 1))
+        count++;
+    afficher_tableau_entiers(tab, n);
     return 0;
 
 }
