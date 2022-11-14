@@ -23,7 +23,8 @@ int main(int argc, char* argv[]) {
         } 
 
     printf("%d ", n);
-    for (int i = 0; i < n; i++) {
+    int i;
+    for ( i = 0; i < n; i++) {
         printf("%d ", tab[i]);
     }
     printf("\n");
