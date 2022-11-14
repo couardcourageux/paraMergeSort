@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 
+
 void disp(int tab[], int size) {
     if (size > 1000) {
         disp(tab, 100);
@@ -41,6 +42,7 @@ void fusionClassique(int i, int j, int m, int tab[], int tmp[]) {
 void triFusionClassique(int i, int j, int tab[], int tmp[]) {
     
     if(j <= i){ return;}
+
     int m = (i + j) / 2;
     
     triFusionClassique(i, m, tab, tmp);     //trier la moitié gauche récursivement
@@ -59,7 +61,7 @@ void triFusionClassique(int i, int j, int tab[], int tmp[]) {
 int main(int argc, char* argv[]) {
 
     if (argc != 2) {
-        printf("usage: ./recursive inputFileName");
+        printf("usage: ./d2s inputFileName");
         return 1;
     }
 

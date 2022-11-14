@@ -3,7 +3,6 @@
 #include <omp.h> 
 
 
-
 typedef struct {
     int i;
     int j;
@@ -25,7 +24,6 @@ void disp(int tab[], int size) {
 void fusionClassique(int i, int j, int m, int tab[], int tmp[]) {
     int g = i;
     int d = m + 1;
-    // printf(" %d -> %d\n", l, r);
     int c;
     for( c = i; c <= j; c++) {
         if(g == m + 1) { //le pointeur du sous-tableau de gauche a atteint la limite
@@ -97,7 +95,7 @@ void triFusionOMP(int i, int j, int prof, int tab[], int tmp[]) {
 int main(int argc, char* argv[]) {
 
     if (argc < 3) {
-        printf("usage: ./thread_fusion inputFileName nbThread");
+        printf("usage: ./d2omp inputFileName nbThread");
         return 1;
     }
 

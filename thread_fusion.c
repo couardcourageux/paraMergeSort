@@ -3,7 +3,6 @@
 #include <pthread.h>
 
 
-
 typedef struct {
     int i;
     int j;
@@ -118,7 +117,7 @@ void triFusionHolder(int i, int j, int prof, int tab[], int tmp[]) {
 int main(int argc, char* argv[]) {
 
     if (argc < 3) {
-        printf("usage: ./thread_fusion inputFileName nbThread");
+        printf("usage: ./d2p inputFileName nbThread");
         return 1;
     }
 
