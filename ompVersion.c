@@ -115,11 +115,6 @@ int main(int argc, char* argv[]) {
     while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}
 
     if (argc == 4) {
-        // clock_t begin = clock();
-        // triFusionOMP(0, n-1, nbThread, tab, tmp);
-        // clock_t end = clock();
-        // double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-        // printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
         double begin = omp_get_wtime();
         triFusionOMP(0, n-1, nbThread, tab, tmp);
         double end = omp_get_wtime();
@@ -128,7 +123,6 @@ int main(int argc, char* argv[]) {
     }
     else {
         triFusionOMP(0, n-1, nbThread, tab, tmp);
-    
         disp(tab, n); 
     }
 

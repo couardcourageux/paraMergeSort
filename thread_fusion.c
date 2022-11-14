@@ -145,7 +145,6 @@ int main(int argc, char* argv[]) {
     }
     else {
         triFusionHolder(0, n-1, atoi(argv[2]), tab, tmp);
-    
         disp(tab, n); 
     }
 
