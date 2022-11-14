@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
+#include <omp.h> 
 
 
 
@@ -63,55 +63,34 @@ void triFusionClassique(int i, int j, int tab[], int tmp[]) {
 
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
-void *triFusionTh(void* holder1) {
-    info_holder* holder = (info_holder*)holder1;
-    int i = holder->i;
-    int j = holder->j;
-    int prof = holder->prof;
-    if (j <= i) {return NULL;}
-    int m = (i+j)/2;
+void triFusionOMP(int i, int j, int prof, int tab[], int tmp[]) {
+    if (j <= i)
+        return;
+    long m = (i+j)/2;
 
-    if (prof > 1) {
-        // on continue à paralléliser
-        info_holder* holderSon = malloc(sizeof(info_holder));
-        holderSon->i = i;
-        holderSon->j = m;
-        holderSon->prof = prof / 2;
-        holderSon->tab = holder->tab;
-        holderSon->tmp = holder->tmp;  
+    if (prof > 1){
+        #pragma omp parallel sections
+            {
+                #pragma omp section
+                    triFusionOMP(i, m, prof/2, tab, tmp);
+                #pragma omp section
+                    triFusionOMP(m + 1, j, prof/2, tab, tmp);
+            }
+        fusionClassique(i, j, m, tab, tmp);
 
-        info_holder* holderLocal = malloc(sizeof(info_holder));
-        holderLocal->i = m+1;
-        holderLocal->j = j;
-        holderLocal->prof = prof / 2;
-        holderLocal->tab = holder->tab;
-        holderLocal->tmp = holder->tmp; 
-
-        pthread_t son;
-        if (pthread_create(&son, NULL, triFusionTh, holderSon )) {free(holderSon);}
-        triFusionTh((void*)holderLocal);
-        free(holderLocal);
-        pthread_join(son, NULL);
-        fusionClassique(i, j, m, holder->tab, holder->tmp);
         int c;
-        for( c = i; c <= j; c++) {holder->tab[c] = holder->tmp[c];}
-    }
+        #pragma omp parallel for
+            for(c = i; c <= j; c++)
+                tab[c] = tmp[c];
+    } 
     else {
-        // on passe en récursif classique
-        triFusionClassique(i, j, holder->tab, holder->tmp);
+        triFusionClassique(i, j, tab, tmp);
     }
-
+        
 }
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 
-void triFusionHolder(int i, int j, int prof, int tab[], int tmp[]) {
-    info_holder* temp = malloc(sizeof(info_holder));
-    temp->i = i;
-    temp->j = j;
-    temp->prof = prof;
-    temp->tab = tab;
-    temp->tmp = tmp;  
-    triFusionTh(temp); 
-}
 
 
 
@@ -138,14 +117,19 @@ int main(int argc, char* argv[]) {
     while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}
 
     if (argc == 4) {
-        clock_t begin = clock();
-        triFusionHolder(0, n-1, nbThread, tab, tmp);
-        clock_t end = clock();
-        double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+        // clock_t begin = clock();
+        // triFusionOMP(0, n-1, nbThread, tab, tmp);
+        // clock_t end = clock();
+        // double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+        // printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
+        double begin = omp_get_wtime();
+        triFusionOMP(0, n-1, nbThread, tab, tmp);
+        double end = omp_get_wtime();
+        double time_spent = end - begin;
         printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
     }
     else {
-        triFusionHolder(0, n-1, atoi(argv[2]), tab, tmp);
+        triFusionOMP(0, n-1, nbThread, tab, tmp);
     
         disp(tab, n); 
     }
