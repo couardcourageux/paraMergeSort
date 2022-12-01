@@ -60,26 +60,18 @@ void triFusionClassique(int i, int j, int tab[], int tmp[]) {
 
 int main(int argc, char* argv[]) {
 
-    if (argc != 2) {
-        printf("usage: ./d2s inputFileName");
-        return 1;
-    }
+  
 
-    // char* filename = "yolo.txt"; 
-    FILE* stream;
-    stream = fopen(argv[1], "r");
-    if (stream == NULL) {
-        fprintf(stderr, "fichier introuvable");
-        exit(-1);
-    }
     int n;
-    fscanf(stream, "%d", &n);
-    
+    scanf("%d", &n);    
+
     int* tab = malloc(n * sizeof(int));
     int* tmp = malloc(n * sizeof(int));
     int count = 0;
-    while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}
 
+    for (count = 0; count < n; count++) {
+        scanf("%d", &tab[count]);
+    }
 
     triFusionClassique(0, n-1, tab, tmp);
     disp(tab, n); 

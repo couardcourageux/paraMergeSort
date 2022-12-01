@@ -93,38 +93,24 @@ void triFusionOMP(int i, int j, int prof, int tab[], int tmp[]) {
 
 
 int main(int argc, char* argv[]) {
-
-    if (argc < 3) {
-        printf("usage: ./d2omp inputFileName nbThread");
-        return 1;
-    }
-
-    FILE* stream;
-    stream = fopen(argv[1], "r");
-    if (stream == NULL) {
-        fprintf(stderr, "fichier introuvable");
-        exit(-1);
-    }
-    int n;
-    fscanf(stream, "%d", &n);
+    int nbThread = 8;
     
-    int nbThread = atoi(argv[2]);
+    int n;
+    scanf("%d", &n);
+    
+    
     int* tab = malloc(n * sizeof(int));
     int* tmp = malloc(n * sizeof(int));
     int count = 0;
-    while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}
 
-    if (argc == 4) {
-        double begin = omp_get_wtime();
-        triFusionOMP(0, n-1, nbThread, tab, tmp);
-        double end = omp_get_wtime();
-        double time_spent = end - begin;
-        printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
+    for (count = 0; count < n; count++) {
+        scanf("%d", &tab[count]);
     }
-    else {
-        triFusionOMP(0, n-1, nbThread, tab, tmp);
-        disp(tab, n); 
-    }
+
+
+    triFusionOMP(0, n-1, nbThread, tab, tmp);
+    disp(tab, n); 
+    
 
 
     
