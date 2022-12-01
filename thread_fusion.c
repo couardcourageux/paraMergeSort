@@ -3,7 +3,6 @@
 #include <pthread.h>
 #include "omp.h"
 
-
 typedef struct {
     long i;
     long j;
@@ -21,20 +20,6 @@ void disp(long tab[], long size) {
     }
 }
 
-void swap(int* a, int* b) {
-    int tmp = *a;
-    *a = *b;
-    *b = tmp;
-}
-
-int dycho(int x, int tab[], int p, int r){
-    int m = (p-r)/2;
-    if (tab[m] == x) {return m;}
-    if (tab[m] < x) {
-        return dycho(x, tab, m+1, r);
-    }
-    return dycho(x, tab, p, m-1);
-}
 
 void afficher_tableau_entiers ( int* tableau, int taille ) {
     int i;
@@ -178,96 +163,24 @@ void generateFile(){
 
 
 
-    fclose(file);
-}
 
-void ptrheads(){
-    /*if (argc < 3) {
-        printf("usage: ./thread_fusion inputFileName nbThread");
-        return 1;
-    }
-
-    FILE* stream;
-    stream = fopen(argv[1], "r");
-    if (stream == NULL) {
-        fprintf(stderr, "fichier introuvable");
-        exit(-1);
-    }
+    int NB_THREAD = 8;
     int n;
-    fscanf(stream, "%d", &n);*/
-    long n = 50000000;
-    int nbThread = 48;
-    long i;
-    long* tab = malloc(n * sizeof(long));
-    long* tmp = malloc(n * sizeof(long));
-
-    FILE  * file = fopen("fichier_test2.txt", "r");
-
-
-    /*srand( (long)time( NULL ) );
-
-    for ( i = 0; i < n; ++i) {
-        tab[i] = rand();
-        //printf( "r[%d] = %d\n", i, r[i]);
-    }*/
-    /*int count = 0;
-    while (fscanf(stream, "%d", &tab[count]) == 1) {count++;}*/
-
-    //if (argc == 4) {
-    double begin = omp_get_wtime();
-    triFusionHolder(0, n-1, nbThread, tab, tmp);
-    double end = omp_get_wtime();
-    double time_spent = end - begin;
-    printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
-    //}
-    /*else {
-        triFusionHolder(0, n-1, atoi(argv[2]), tab, tmp);
-
-        disp(tab, n);
-    }*/
-}
-
-void omp(){
-    long n = 50000000;
-    int nbThread = 2;
-    long* tab = malloc(n * sizeof(long));
-    long* tmp = malloc(n * sizeof(long));
-    long i;
-
-    srand( (long)time( NULL ) );
-
-    for ( i = 0; i < n; ++i) {
-        tab[i] = rand();
-        //printf( "r[%d] = %d\n", i, r[i]);
-    }
-    //disp(tab, n);
-    double begin = omp_get_wtime();
-    triFusionOMP(0, n-1, nbThread, tab, tmp);
-    double end = omp_get_wtime();
-    double time_spent = end - begin;
-    printf("n: %d, th: %d, time: %lf\n", n, nbThread, time_spent);
-    //disp(tab, n);
-}
-
-int main(int argc, char* argv[]) {
-    //ptrheads();
-    //omp();
-    //generateFile();
-    int n = 10;
-    int i;
-    int* tab = malloc(n*sizeof(long));
-    FILE *file = fopen("fichier_test2.txt", "r");
-
-    if (file == NULL){
-        printf("fichier introuvable");
-        exit(-1);
-    }
-    int m;
-    fscanf(file, "%ld", &m);
+    scanf("%d", &n);
+    
+    int nbThread = atoi(argv[2]);
+    int* tab = malloc(n * sizeof(int));
+    int* tmp = malloc(n * sizeof(int));
     int count = 0;
-    while (fscanf(file, "%ld", &tab[count] == 1))
-        count++;
-    afficher_tableau_entiers(tab, n);
+
+    for (count = 0; count < n; count++) {
+        scanf("%d", &tab[count]);
+    }
+
+    
+    triFusionHolder(0, n-1, NB_THREAD, tab, tmp);
+    disp(tab, n); 
+    
     return 0;
 
 }
