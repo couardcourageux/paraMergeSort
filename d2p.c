@@ -146,29 +146,14 @@ void triFusionHolder(long i, long j, int prof, long tab[], long tmp[]) {
     triFusionTh(temp);
 }
 
-void generateFile(){
-    long n = 50000000;
-    long* tab = malloc(n * sizeof(long));
-    long i;
-
-    srand( (long)time( NULL ) );
-
-    FILE *file = fopen("fichier_test2.txt", "w");
-    if (file != NULL){
-        for ( i = 0; i < 10; ++i) {
-            tab[i] = rand();
-            fprintf(file, "%ld ", tab[i]);
-        }
-    }
 
 
-
+int main(int argc, char* argv[]) {
 
     int NB_THREAD = 8;
     int n;
     scanf("%d", &n);
     
-    int nbThread = atoi(argv[2]);
     int* tab = malloc(n * sizeof(int));
     int* tmp = malloc(n * sizeof(int));
     int count = 0;
